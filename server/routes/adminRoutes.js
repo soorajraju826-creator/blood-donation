@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { protect, adminOnly } from "../middleware/auth.js";
+import { dashboard, listUsers, listDonors, listRequests, updateRequestStatus, deleteUser } from "../controllers/adminController.js";
+const router = Router();
+router.use(protect, adminOnly);
+router.get("/dashboard", dashboard);
+router.get("/users", listUsers);
+router.get("/donors", listDonors);
+router.get("/requests", listRequests);
+router.patch("/requests/:id/status", updateRequestStatus);
+router.delete("/users/:id", deleteUser);
+export default router;
