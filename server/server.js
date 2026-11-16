@@ -6,23 +6,36 @@ import authRoutes from "./routes/authRoutes.js";
 import donorRoutes from "./routes/donorRoutes.js";
 import requestRoutes from "./routes/requestRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());
 
+const ignored = ["node_modules", ".git", ".env"];
+
+function getFiles(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true })
+    .filter(item => !ignored.includes(item.name))
+    .map(item => ({
+      name: item.name,
+      type: item.isDirectory() ? "folder" : "file",
+      ...(item.isDirectory()
+        ? { children: getFiles(path.join(directory, item.name)) }
+        : {})
+    }));
+}
+
 app.get("/", (req, res) => {
   res.json({
-    message: "LifeLine Blood Donation Management API",
+    message: "LifeLine Blood Donation Management System",
     status: "Running",
-    resources: {
-      health: "/api/health",
-      authentication: "/api/auth",
-      donors: "/api/donors",
-      requests: "/api/requests",
-      admin: "/api/admin"
-    }
+    directory: getFiles(__dirname)
   });
 });
 
